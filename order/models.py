@@ -8,7 +8,7 @@ class Promotion(models.Model):
         db_table = 'promotions'
 
 class Order(models.Model):
-    user            = models.ForeignKey('user.User', on_delete=models.SET_DEFAULT, default=1)
+    user            = models.ForeignKey('user.User', on_delete=models.SET_NULL, null=True)
     order_number    = models.CharField(max_length=300)
     order_status    = models.ForeignKey('OrderStatus', on_delete=models.SET_NULL, null=True)
     shipment_status = models.ForeignKey('ShipmentStatus', on_delete=models.SET_NULL, null=True)
