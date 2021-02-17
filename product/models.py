@@ -19,7 +19,6 @@ class Product(models.Model):
     name           = models.CharField(max_length=45)
     sub_name       = models.CharField(max_length=45)
     description    = models.CharField(max_length=3000)
-    image_url      = models.CharField(max_length=2000)
     nutrition_url  = models.CharField(max_length=2000)
     vegan_level    = models.OneToOneField('VeganLevel', on_delete=models.CASCADE)
     is_default     = models.BooleanField(default=False)
@@ -29,12 +28,20 @@ class Product(models.Model):
     care_smoker    = models.BooleanField(default=False)
     care_drinker   = models.BooleanField(default=False)
     disease        = models.ManyToManyField('Disease', through='ProductDisease')
+    allergy        = models.ManyToManyField('Allergy', through='ProductAllergy')
     dietary_habit  = models.ManyToManyField('DietaryHabit', through='ProductDietaryHabit')
     goal           = models.ManyToManyField('Goal', through='ProductGoal')
 
     class Meta:
         db_table = 'products'
 
+class Image(models.Model):
+    product   = models.ForeignKey('Product', on_delete=models.CASCADE)
+    image_url = models.CharField(max_length=2000)
+
+    class Meta:
+        db_table='images'
+    
 class ProductStock(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
     size    = models.CharField(max_length=20, null=True)
@@ -63,6 +70,19 @@ class ProductDisease(models.Model):
 
     class Meta:
         db_table = 'product_diseases'
+
+class Allergy(models.Model):
+    name = models.CharField(max_length=30)
+
+    class Meta:
+        db_table='allergies'
+
+class ProductAllergy(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    allergy = models.ForeignKey('Allergy', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table='product_allergy'
 
 class Goal(models.Model):
     name = models.CharField(max_length = 20)
