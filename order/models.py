@@ -10,8 +10,8 @@ class Promotion(models.Model):
 class Order(models.Model):
     user            = models.ForeignKey('user.User', on_delete=models.SET_DEFAULT, default=1)
     order_number    = models.CharField(max_length=300)
-    order_status    = models.OneToOneField('OrderStatus', on_delete=models.SET_NULL, null=True)
-    shipment_status = models.OneToOneField('ShipmentStatus', on_delete=models.SET_NULL, null=True)
+    order_status    = models.ForeignKey('OrderStatus', on_delete=models.SET_NULL, null=True)
+    shipment_status = models.ForeignKey('ShipmentStatus', on_delete=models.SET_NULL, null=True)
     sub_total_cost  = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_cost   = models.DecimalField(max_digits=10, decimal_places=2)
     promotion       = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True)
