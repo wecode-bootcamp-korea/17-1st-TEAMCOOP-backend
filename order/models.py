@@ -2,16 +2,16 @@ from django.db      import models
 
 class Promotion(models.Model):
     code           = models.CharField(max_length=30)
-    discount_price = models.IntegerField()
+    discount_price = models.DecimalField(max_digits=10, decimal_places=2)
     
     class Meta:
         db_table = 'promotions'
 
 class Order(models.Model):
-    user 	    = models.ForeignKey('user.User', on_delete=models.SET_DEFAULT, default=1)
+    user            = models.ForeignKey('user.User', on_delete=models.SET_DEFAULT, default=1)
     order_number    = models.CharField(max_length=300)
     order_status    = models.OneToOneField('OrderStatus', on_delete=models.SET_NULL, null=True)
-    ship_status     = models.OneToOneField('ShipStatus', on_delete=models.SET_NULL, null=True)
+    shipment_status = models.OneToOneField('ShipmentStatus', on_delete=models.SET_NULL, null=True)
     sub_total_cost  = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_cost   = models.DecimalField(max_digits=10, decimal_places=2)
     promotion       = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True)
@@ -43,14 +43,14 @@ class OrderProductStock(models.Model):
 
 class OrderStatus(models.Model):
     id   = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length = 20)
+    name = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'order_status'
 
-class ShipStatus(models.Model):
+class ShipmentStatus(models.Model):
     id   = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length = 20)
+    name = models.CharField(max_length=20)
 
     class Meta:
-        db_table = 'ship_status'
+        db_table = 'shipment_status'

@@ -19,7 +19,7 @@ class Product(models.Model):
     name           = models.CharField(max_length=45)
     sub_name       = models.CharField(max_length=45)
     description    = models.CharField(max_length=3000)
-    nutrition_url  = models.CharField(max_length=2000)
+    nutrition_url  = models.URLField(max_length=2000)
     is_new         = models.BooleanField(default=False)
     vegan_level    = models.OneToOneField('VeganLevel', on_delete=models.CASCADE)
     is_default     = models.BooleanField(default=False)
@@ -39,7 +39,7 @@ class Product(models.Model):
 
 class Image(models.Model):
     product   = models.ForeignKey('Product', on_delete=models.CASCADE)
-    image_url = models.CharField(max_length=2000)
+    image_url = models.URLField(max_length=2000)
 
     class Meta:
         db_table='images'
@@ -61,7 +61,7 @@ class RelatedProduct(models.Model):
         db_table = 'related_products'
 
 class Disease(models.Model):
-    name = models.CharField(max_length = 30)
+    name = models.CharField(max_length=30)
 
     class Meta:
         db_table = 'diseases'
@@ -87,8 +87,8 @@ class ProductAllergy(models.Model):
         db_table='product_allergy'
 
 class Goal(models.Model):
-    name = models.CharField(max_length = 20)
-    icon = models.CharField(max_length = 20, null = True)
+    name = models.CharField(max_length=20)
+    icon = models.CharField(max_length=20, null=True)
 
     class Meta:
         db_table = 'goals'
@@ -101,7 +101,7 @@ class ProductGoal(models.Model):
         db_table = 'product_goals'
 
 class DietaryHabit(models.Model):
-    name = models.CharField(max_length = 30)
+    name = models.CharField(max_length=30)
 
     class Meta:
         db_table = 'dietary_habits'
@@ -115,28 +115,28 @@ class ProductDietaryHabit(models.Model):
 
 class VeganLevel(models.Model):
     id   = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length = 20)
+    name = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'vegan_levels'
 
 class ActivityLevel(models.Model):
     id   = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length = 20)
+    name = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'activity_levels'
 
 class GenderCode(models.Model):
     id   = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length = 20)
+    name = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'gender_codes'
 
 class AgeLevel(models.Model):
     id   = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length = 20)
+    name = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'age_levels'
