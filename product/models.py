@@ -84,7 +84,7 @@ class ProductAllergy(models.Model):
     allergy = models.ForeignKey('Allergy', on_delete=models.CASCADE)
 
     class Meta:
-        db_table='product_allergy'
+        db_table='product_allergies'
 
 class Goal(models.Model):
     name = models.CharField(max_length=20)
