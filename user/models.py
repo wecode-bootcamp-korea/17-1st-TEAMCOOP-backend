@@ -17,3 +17,13 @@ class Address(models.Model):
 
     class Meta:
         db_table = 'addresses'
+
+#SMS발송시 인증번호(auth_number)를 저장하는 테이블.
+class AuthNumber(models.Model):
+    phone_number = models.CharField(primary_key=True, max_length=11)
+    auth_number  = models.IntegerField()
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'auth_numbers'
