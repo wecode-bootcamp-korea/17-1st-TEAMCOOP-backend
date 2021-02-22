@@ -20,13 +20,11 @@ from user.models  import User, AuthNumber
 
 MINIMUM_PASSWORD_LENGTH = 8
 
-def validate_email(email):
-    pattern = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
-    if not pattern.match(email):
-        return False
-    return True
-
 class SignupView(View):
+    def validate_email(self, email):
+        pattern = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        return pattern.match(email)
+
     def post(self, request):
         try:
             signup_data     = json.loads(request.body)
@@ -41,7 +39,7 @@ class SignupView(View):
             if len(password) < MINIMUM_PASSWORD_LENGTH:
                 return JsonResponse({"message": "PASSWORD_VALIDATION_ERROR"}, status=400)
 
-            if not validate_email(email):
+            if not self.validate_email(email=email):
                 return JsonResponse({"message": "EMAIL_VALIDATION_ERROR"}, status=400)
 
             hased_pw          = bcrypt.hashpw(signup_data['password'].encode('utf-8'), bcrypt.gensalt())
@@ -62,9 +60,8 @@ class SignupView(View):
 class SmsSendView(View):
     def validate_phone_number(self, phone_number):
         pattern = re.compile('^[0]\d{2}\d{3,4}\d{4}$')
-        if not pattern.match(phone_number):
-            return False
-        return True
+        return pattern.match(phone_number)
+            
 
     def make_signature(self, string):
         secret_key    = bytes(SMS['secret_key'], 'UTF-8')
@@ -96,10 +93,10 @@ class SmsSendView(View):
             }
 
             body           = {
-                "type": "SMS",
-                "from": SMS['from_number'],
+                "type"    : "SMS",
+                "from"    : SMS['from_number'],
                 "messages":[{"to":phone_number}],
-                "content": "[coreof] Please enter [{}].".format(auth_number)  
+                "content" : "[coreof] Please enter [{}].".format(auth_number)  
             }
 
             body          = json.dumps(body)
@@ -154,7 +151,7 @@ class LoginView(View):
                     token = jwt.encode({'user': user.id}, SECRET_KEY, ALGORITHM)
                     return JsonResponse({"message": "SUCCESS", "ACCESS_TOKEN": token}, status=200)
                 
-                return JsonResponse({"message": "INVALID_PASSWORD"}, status=401)
+                return JsonResponse({"message": "INVALID_USER"}, status=401)
             
             return JsonResponse({"message": "INVALID_USER"}, status=401)
 
