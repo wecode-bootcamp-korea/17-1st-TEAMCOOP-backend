@@ -99,3 +99,45 @@ class ProductView(View):
                 result.append(product_info)
             
             return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
+
+        #카테고리별 상품보기
+        if Category.objects.filter(id=id).exists:
+            categories = Category.objects.filter(id=id)
+            for category in categories:
+                context = {}
+                context["id"] = category.id
+                context["subcategory"] = {}
+                context["subcategory"]["title"] = category.name
+                context["subcategory"]["description"] = category.description
+                
+                products_category = Product.objects.filter(category=category)
+                product_info_list = []
+                for product_category in products_category:
+                    goals_product = product.goal.all()
+                    product_SSPs  = product.productstock_set.all()
+
+                    product_price_list = [product_SSP.price for product_SSP in product_SSPs]
+                    product_stock_list = [product_SSP.stock for product_SSP in product_SSPs]
+                    product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
+                    goal_name_list     = [goal_product.name for goal_product in goals_product]
+                    is_soldout         = bool(sum(product_stock_count_list) == 0)
+
+                    product_info = {
+                        "id"          : product_category.id,
+                        "displayTitle": product_category.name, 
+                        "subTitle"    : product_category.sub_name,
+                        "imageUrl"    : product_category.image_set.get(is_main=True).image_url,  
+                        "symbolURL"   : goal_name_list,              
+                        "description" : product_category.description,
+                        "displayPrice": product_price_list,
+                        "displaySize" : product_size_list,
+                        "isNew"       : product_category.is_new,
+                        "isSoldout"   : is_soldout
+                        }
+                    product_info_list.append(product_info)
+
+                context["item"] = product_info_list
+                result.append(context)
+            
+            return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
+        
