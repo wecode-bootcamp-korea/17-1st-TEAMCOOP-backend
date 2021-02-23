@@ -124,3 +124,82 @@ class CartDetailView(View):
 
         return JsonResponse({"message": "SUCCESS"}, status=200) 
 
+class CheckOutView(View):
+    @login_decorator
+    def get(self, request, order_number):
+        user = request.user
+
+        if not order_number:
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        order_info     = Order.objects.get(order_number=order_number)
+        order_products = order_info.orderproductstock_set.all()
+        
+        cart_product_list = []
+        for order_product in order_products:
+            product_SSP  = order_product.product_stock
+            product      = product_SSP.product
+            product_info = {
+                "category"        : product.category.menu.name,
+                "productId"       : product.id,
+                "productName"     : product.name,
+                "productSubName"  : product.sub_name,
+                "productStockId"  : product_SSP.id,
+                "productSize"     : product_SSP.size,
+                "productPrice"    : product_SSP.price,
+                "productIsSoldOut": bool(product_SSP.stock - order_product.quantity <= 0), 
+                "productImageUrl" : product.image_set.get(is_main=True).image_url,
+                "productQuantity" : order_product.quantity
+            }
+            cart_product_list.append(product_info)
+         
+        address_info = user.address_set.filter(is_main=True)
+        address      = address_info[0].address if address_info else ""
+        zip_code     = address_info[0].zip_code if address_info else ""
+        user_info = {
+            "userName"    : user.name,
+            "email"       : user.email,
+            "phoneNumber" : user.phone_number,
+            "address"     : address,
+            "zipcode"     : zip_code
+        }
+
+        data = {
+            "orderNumber": order_info.order_number,
+            "carts"      : cart_product_list,
+            "user"       : user_info
+        }
+        return JsonResponse({"data": data, "message": "SUCCESS"}, status=200)
+        
+    @login_decorator
+    def post(self, request, order_number):
+        data = json.loads(request.body)
+        sub_total_cost = data.get('subTotalCost', None)
+        shipping_cost  = data.get('shippingCost', None)
+        total_cost     = data.get('totalCost', None)
+        address_order  = data.get('address', None)
+        zipcode_order  = data.get('zipcode', None)
+        user           = request.user
+
+        if not (sub_total_cost and str(shipping_cost) and total_cost and address_order and zipcode_order):
+            return JsonResponse({"message": "KEY_ERROR"}, status=400)
+
+        order_info = Order.objects.get(order_number=order_number)
+        order_info.order_status_id = 2
+        order_info.sub_total_cost  = float(sub_total_cost)
+        order_info.shipping_cost   = float(shipping_cost)
+        order_info.total_cost      = float(total_cost)
+        order_info.save()
+
+        Address.objects.update_or_create(
+            user     = user,
+            address  = address_order,
+            zip_code = zipcode_order,
+            defaults = {
+                'order'  : order_info,
+                'is_main': False
+            }
+        )
+
+        return JsonResponse({"message": "SUCCESS"}, status=200)
+        
