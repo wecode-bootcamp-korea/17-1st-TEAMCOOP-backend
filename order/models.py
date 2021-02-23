@@ -16,6 +16,7 @@ class Order(models.Model):
     shipping_cost   = models.DecimalField(max_digits=10, decimal_places=2)
     promotion       = models.ForeignKey('Promotion', on_delete=models.SET_NULL, null=True)
     total_cost      = models.DecimalField(max_digits=10, decimal_places=2)
+    product_stock   = models.ManyToManyField('product.ProductStock', through='OrderProductStock')
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
 
@@ -25,8 +26,9 @@ class Order(models.Model):
 class Review(models.Model):
     order      = models.OneToOneField('Order', on_delete=models.CASCADE)
     rate       = models.DecimalField(max_digits=4, decimal_places=1)
+    title      = models.CharField(max_length=1000)
     content    = models.CharField(max_length=1000)
-    image_url  = models.URLField(max_length=2000)
+    image_url  = models.URLField(max_length=2000, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
