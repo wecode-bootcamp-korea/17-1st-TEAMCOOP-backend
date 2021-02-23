@@ -1,20 +1,21 @@
 from django.db import models
 
 class User(models.Model):
-    name         = models.CharField(max_length=10)
-    email        = models.EmailField(max_length=50)
-    phone_number = models.CharField(max_length=20)
-    password     = models.CharField(max_length=300)
-    created_at   = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
+    name           = models.CharField(max_length=10)
+    email          = models.EmailField(max_length=50)
+    phone_number   = models.CharField(max_length=20)
+    password       = models.CharField(max_length=300)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+    recommendation = models.ManyToManyField('product.Product', related_name='recommendation')
 
     class Meta:
         db_table = 'users'
 
 class Address(models.Model):
-    user    = models.ForeignKey('User', on_delete = models.CASCADE)
-    address = models.CharField(max_length=200)
-    zip_code = models.CharField(max_length=20)
+    user     = models.ForeignKey('User', on_delete = models.CASCADE)
+    address  = models.CharField(max_length=200)
+    zip_code = models.CharField(max_length=20, null=True)
     is_main  = models.BooleanField(default=True)
     order    = models.OneToOneField('order.Order', on_delete=models.CASCADE, null=True)
 
@@ -30,3 +31,4 @@ class AuthNumber(models.Model):
 
     class Meta:
         db_table = 'auth_numbers'
+
