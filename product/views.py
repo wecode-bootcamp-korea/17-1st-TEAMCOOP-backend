@@ -32,7 +32,7 @@ class ProductView(View):
         result = []
         # show_all
         if id == None:
-            categorie_all = Category.objects.all()
+            category_all = Category.objects.all()
             for category in category_all: 
                 context = {}
                 context["id"] = category.id
@@ -43,16 +43,16 @@ class ProductView(View):
                 products_category = Product.objects.filter(category=category) 
                 product_info_list = []
                 for product_category in products_category:
-                    goals_product      = product.goal.all()   
-                    product_SSPs       = product.productstock_set.all()
+                    goals_product      = product_category.goal.all()   
+                    product_SSPs       = product_category.productstock_set.all()
                     goal_name_list     = [goal_product.name for goal_product in goals_product]
                     product_price_list = [product_SSP.price for product_SSP in product_SSPs]
                     product_stock_list = [product_SSP.stock for product_SSP in product_SSPs]
                     product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
-                    is_soldout         = bool(sum(product_stock_count_list) == 0)
+                    is_soldout         = bool(sum(product_stock_list) == 0)
 
                     product_info = {
-                        "id"          : product.id,
+                        "id"          : product_category.id,
                         "displayTitle": product_category.name, 
                         "subTitle"    : product_category.sub_name,
                         "imageUrl"    : product_category.image_set.get(is_main=True).image_url,  
@@ -82,7 +82,7 @@ class ProductView(View):
                 product_stock_list = [product_SSP.stock for product_SSP in product_SSPs] 
                 product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
                 goal_name_list     = [goal_product.name for goal_product in goals_product]
-                is_soldout         = bool(sum(product_stock_count_list) == 0)
+                is_soldout         = bool(sum(product_stock_list) == 0)
                 product_info = {
                         "id"          : product.id,
                         "displayTitle": product.name, 
@@ -120,7 +120,7 @@ class ProductView(View):
                     product_stock_list = [product_SSP.stock for product_SSP in product_SSPs]
                     product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
                     goal_name_list     = [goal_product.name for goal_product in goals_product]
-                    is_soldout         = bool(sum(product_stock_count_list) == 0)
+                    is_soldout         = bool(sum(product_stock_list) == 0)
 
                     product_info = {
                         "id"          : product_category.id,
@@ -154,7 +154,7 @@ class GoalView(View):
                 product_stock_list = [product_SSP.stock for product_SSP in product_SSPs]
                 product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
                 goal_name_list     = [goal_product.name for goal_product in goals_product]
-                is_soldout         = bool(sum(product_stock_count_list) == 0)
+                is_soldout         = bool(sum(product_stock_list) == 0)
 
                 product_info = {
                         "id"           : product.id,
