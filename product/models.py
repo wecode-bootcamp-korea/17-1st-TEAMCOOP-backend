@@ -89,7 +89,6 @@ class ProductAllergy(models.Model):
 
 class Goal(models.Model):
     name = models.CharField(max_length=20)
-    icon = models.URLField(max_length=2000)
 
     class Meta:
         db_table = 'goals'
