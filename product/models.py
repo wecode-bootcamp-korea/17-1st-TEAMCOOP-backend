@@ -38,8 +38,9 @@ class Product(models.Model):
         db_table = 'products'
 
 class Image(models.Model):
-    product   = models.ForeignKey('Product', on_delete=models.CASCADE)
-    image_url = models.URLField(max_length=2000)
+    product        = models.ForeignKey('Product', on_delete=models.CASCADE)
+    image_url      = models.URLField(max_length=2000)
+    is_main        = models.BooleanField(default=False)
 
     class Meta:
         db_table='images'
@@ -88,7 +89,7 @@ class ProductAllergy(models.Model):
 
 class Goal(models.Model):
     name = models.CharField(max_length=20)
-    icon = models.CharField(max_length=20, null=True)
+    icon = models.URLField(max_length=2000)
 
     class Meta:
         db_table = 'goals'
