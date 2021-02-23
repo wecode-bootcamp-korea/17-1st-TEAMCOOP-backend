@@ -19,6 +19,7 @@ class Order(models.Model):
     product_stock   = models.ManyToManyField('product.ProductStock', through='OrderProductStock')
     created_at      = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
+    product_stock   = models.ManyToManyField('product.ProductStock', through='OrderProductStock')
 
     class Meta:
         db_table = 'orders'
