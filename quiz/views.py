@@ -54,9 +54,12 @@ class RecommendationView(View):
             care_drinker = all_answer[6][0]
 
             goals = all_answer[7]
+            goal_id_list = [goal.id for goal in Goal.objects.filter(name__in=goals)]
             vegan_type = all_answer[8][0]
             allergies = all_answer[9]
+            allergy_id_list = [allergy.id for allergy in Allergy.objects.filter(name__in=allergies)]
             diseases = all_answer[10]
+            disease_id_list = [disease.id for disease in Disease.objects.filter(name__in=diseases)]
 
             gender_code = [1, 3] if gender == 'male' else [2, 3] 
             age_code = [1, 2] if age >= 50 else [1, 3] 
@@ -69,8 +72,8 @@ class RecommendationView(View):
             q = Q(is_default=True)
             q.add(Q(gender_code__in = gender_code) & Q(age_level__in = age_code) & Q(care_obesity = care_obesity) 
                 & Q(activity_level__in = activity_level) & Q(care_smoker = care_smoker) & Q(care_drinker = care_drinker) 
-                & Q(goal__in = goals) & Q(vegan_level = vegan_level) & ~Q(allergy__in = allergies) & Q(disease__in = diseases), q.OR)
-            result_products = Product.objects.filter(q).distinct()
+                & Q(goal__in = goal_id_list) & Q(vegan_level = vegan_level) & ~Q(allergy__in = allergy_id_list) & Q(disease__in = disease_id_list), q.OR)
+            results_products = Product.objects.filter(q).distinct()
             recommendations = []
             for result_product in results_products:
                 if QuizResult.objects.filter(user=user):
@@ -100,4 +103,3 @@ class RecommendationView(View):
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-
