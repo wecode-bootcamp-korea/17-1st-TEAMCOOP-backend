@@ -53,7 +53,7 @@ class ProductListView(View):
                     product_price_list = [product_SSP.price for product_SSP in product_SSPs] 
                     product_stock_list = [product_SSP.stock for product_SSP in product_SSPs]
                     product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
-                    is_soldout         = bool(sum(product_stock_count_list) == 0)
+                    is_soldout         = bool(sum(product_stock_list) == 0)
 
                     product_info = {}
                     product_info["id"]           = product.id
@@ -80,10 +80,10 @@ class ProductListView(View):
                 goals              = product.goal.all()      
                 product_SSPs       = product.productstock_set.all()  
                 goal_name_list     = [goal.name for goal in goals]
-                product_price_list = [product_ssp.price for product_SSPs in product_SSPs] 
-                product_stock_list = [product_ssp.stock] for product_SSPs in product_SSPs] 
-                product_size_list  = [product_ssp.size for product_SSPs in product_SSPs]
-                is_soldout         = bool(sum(product_stock_count_list) == 0)
+                product_price_list = [product_SSP.price for product_SSP in product_SSPs] 
+                product_stock_list = [product_SSP.stock] for product_SSP in product_SSPs] 
+                product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
+                is_soldout         = bool(sum(product_stock_list) == 0)
 
                 product_info["id"]           = product.id
                 product_info["displayTitle"] = product.name
@@ -91,8 +91,8 @@ class ProductListView(View):
                 product_info["imageUrl"]     = product.image_set.get(is_main=True).image_url
                 product_info["symbolURL"]    = goal_name_list
                 product_info["description"]  = product.description
-                product_info["displayPrice"] = product_stock_price_list
-                product_info["displaySize"]  = product_stock_size_list
+                product_info["displayPrice"] = product_price_list
+                product_info["displaySize"]  = product_size_list
                 product_info["isNew"]        = product.is_new
                 product_info["isSoldout"]    = is_soldout
                 product_info_list.append(product_info)
