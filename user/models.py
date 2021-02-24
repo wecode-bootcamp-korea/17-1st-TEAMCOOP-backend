@@ -7,8 +7,8 @@ class User(models.Model):
     password       = models.CharField(max_length=300)
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True)
-    recommendation = models.ManyToManyField('product.Product', related_name='recommendation')
-
+    recommendation = models.ManyToManyField('product.Product', through='quiz.QuizResult')
+    
     class Meta:
         db_table = 'users'
 
