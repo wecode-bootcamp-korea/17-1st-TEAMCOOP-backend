@@ -2,8 +2,9 @@ import json
 from datetime import datetime
 from random   import randint
 
-from django.http  import JsonResponse, HttpResponse
-from django.views import View
+from django.http      import JsonResponse, HttpResponse
+from django.views     import View
+from django.db.models import Q
 
 from user.utils     import login_decorator
 from product.models import Category, Product, ProductStock, Goal
@@ -21,69 +22,52 @@ class ProductListView(View):
             product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
             is_soldout         = bool(sum(product_stock_list) == 0)
             
-            product_info = {}
-            product_info["id"]           = product.id
-            product_info["displayTitle"] = product.name
-            product_info["subTitle"]     = product.sub_name
-            product_info["imageUrl"]     = product.image_set.get(is_main=True).image_url
-            product_info["symbolURL"]    = goal_name_list
-            product_info["description"]  = product.description
-            product_info["displayPrice"] = product_price_list
-            product_info["displaySize"]  = product_size_list
-            product_info["isNew"]        = product.is_new
-            product_info["isSoldout"]    = is_soldout
+            product_info = {
+                "id"           : product.id,
+                "displayTitle" : product.name,
+                "subTitle"     : product.sub_name,
+                "imageUrl"     : product.image_set.get(is_main=True).image_url,
+                "symbolURL"    : goal_name_list,
+                "description"  : product.description,
+                "displayPrice" : product_price_list,
+                "displaySize"  : product_size_list,
+                "isNew"        : product.is_new,
+                "isSoldout"    : is_soldout
+            }
             product_info_list.append(product_info)
 
         return product_info_list
 
     def get(self, request):
         sort     = request.GET.get('sort', None)
-        sort_dic = {}
-        sort_dic["lettervitamins"] = "Letter Vitamins"
-        sort_dic["minerals"]       = "Minerals"
-        sort_dic["herbs"]          = "Herbs"
-        sort_dic["probiotics"]     = "Probiotics"
-        sort_dic["specialty"]      = "Specialty"
-        sort_dic["collagen"]       = "Collagen"
-        sort_dic["protein"]        = "Protein"
-        sort_dic["boosts"]         = "Boosts"
-        sort_dic["immunity"]       = "Immunity"
-        sort_dic["brain"]          = "Brain"
-        sort_dic["energy"]         = "Energy"
-        sort_dic["eyes"]           = "Eyes"
-        sort_dic["heart"]          = "Heart"
-        sort_dic["digestion"]      = "Digestion"
-        sort_dic["bones"]          = "Bones"
-        sort_dic["fitness"]        = "Fitness"
-        sort_dic["new"]            = True
-        sort_dic["all"]            = ""
+        q=Q()
+        if sort:
+            q.add(Q(name__icontains=sort),q.OR)
+        categories = Category.objects.filter(q)
 
-        result = []
-        categories = [categories for categories in Category.objects.filter(name__contains=sort_dic[sort])]
-        if categories:
-            for category in categories: 
-                context = {}
-                context["id"]                         = category.id
-                context["subcategory"]                = {}
-                context["subcategory"]["title"]       = category.name
-                context["subcategory"]["description"] = category.description
-                products = Product.objects.filter(category=category)  
-                product_info_list = self.make_product_info_list(products=products) 
-                context["item"]   = product_info_list
-                result.append(context)
-
+        if categories: 
+            result = [{
+                "id"          : category.id,
+                "subcategory" : {
+                    "title"       : category.name,
+                    "description" : category.description,
+                },
+                "item"         : self.make_product_info_list(products=Product.objects.filter(category=category)) 
+            } for category in categories]
+j
             return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
-        else:
-            if Goal.objects.filter(name__icontains=sort_dic[sort]).exists():
-                goal     = Goal.objects.get(name__icontains=sort_dic[sort])
-                products = Product.objects.filter(goal=goal)
-                result   = self.make_product_info_list(products=products) 
-                return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
 
-            else:
-                products = Product.objects.filter(is_new=sort_dic[sort])
-                result   = self.make_product_info_list(products=products) 
-                return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
+        if Goal.objects.filter(name__icontains=sort).exists():
+            goal     = Goal.objects.get(name__icontains=sort)
+            products = Product.objects.filter(goal=goal)
+            result   = self.make_product_info_list(products=products) 
+            
+            return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
+
+        products = Product.objects.filter(is_new=bool(sort == 'new'))
+        result   = self.make_product_info_list(products=products) 
+
+        return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
         
 class ProductDetailView(View):
     def get(self, request, product_id):
@@ -120,7 +104,7 @@ class ProductDetailView(View):
         context['allergyList']    = [allergy.name for allergy in product.allergy.all()]
 
         # size, price
-        product_SSPs = ProductStock.objects.filter(product=product)  # SSP: size, stock, price
+        product_SSPs = ProductStock.objects.filter(product=product)  # SSP: siz e, stock, price
         if category == 'vitamins':
             price      = product_SSPs[0].price   
             is_soldout = bool(product_SSPs[0].stock == 0)
