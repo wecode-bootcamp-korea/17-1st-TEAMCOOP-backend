@@ -170,9 +170,7 @@ class CartDetailView(View):
 
             user          = request.user
             order         = Order.objects.get(user=user, order_status=OrderStatus.objects.get(name='주문 전'))
-            order_product = order.product_stock.get(id=product_stock_id)
-
-            order_product.delete()
+            order.product_stock.remove(ProductStock.objects.get(id=product_stock_id))
 
             # 장바구니에 상품이 없을 경우 order 정보 삭제
             if not OrderProductStock.objects.filter(order=order).exists():
@@ -183,14 +181,14 @@ class CartDetailView(View):
         except Order.DoesNotExist:
             return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
 
-        except MultipleObjectsReturned:
-            return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
-
         except OrderStatus.DoesNotExist:
             return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
 
         except OrderProductStock.DoesNotExist:
             return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+
+        except MultipleObjectsReturned:
+            return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
 
 class CheckOutView(View):
     @login_decorator
@@ -215,8 +213,7 @@ class CheckOutView(View):
             "productImageUrl" : order_product.product_stock.product.image_set.get(is_main=True).image_url,
             "productQuantity" : order_product.quantity
             } for order_product in order_products
-        ]
-        if 
+        ] 
          
         address_info = user.address_set.filter(is_main=True)
         address      = address_info[0].address if address_info else ""
