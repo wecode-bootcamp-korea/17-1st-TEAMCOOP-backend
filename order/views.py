@@ -47,6 +47,9 @@ class CartView(View):
         except OrderStatus.DoesNotExist:
             return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
 
+        except MultipleObjectsReturned:
+            return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
+
     @login_decorator
     def post(self, request):
         try:
@@ -96,6 +99,10 @@ class CartView(View):
         
         except ProductStock.DoesNotExist:
             return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+
+        except MultipleObjectsReturned:
+            return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
+
 
 
     @login_decorator
@@ -209,6 +216,7 @@ class CheckOutView(View):
             "productQuantity" : order_product.quantity
             } for order_product in order_products
         ]
+        if 
          
         address_info = user.address_set.filter(is_main=True)
         address      = address_info[0].address if address_info else ""
@@ -262,3 +270,11 @@ class CheckOutView(View):
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
+        except Order.DoesNotExist:
+            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+
+        except OrderStatus.DoesNotExist:
+            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+
+        except MultipleObjectsReturned:
+            return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
