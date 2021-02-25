@@ -30,7 +30,8 @@ class RecommendationView(View):
             
             gender       = all_answer[1][0]
             age          = int(all_answer[2][0])
-            bmi          = int(all_answer[3][0])
+            height       = int(all_answer[3][0])
+            weight       = int(all_answer[3][1])
             activity     = all_answer[4][0]
             care_smoker  = all_answer[5][0]
             care_drinker = all_answer[6][0]
@@ -41,7 +42,8 @@ class RecommendationView(View):
 
             gender_code     = [1, 3] if gender == 'male' else [2, 3]
             age_code        = [2, 3] if age >= 50 else [1, 3]
-            care_obesity    = [0, 1] if bmi >= 25 else [0]
+            bmi             = weight/((height*0.01)**2)
+            care_obesity    = [0, 1] if  bmi>= 25 else [0]
             activity_level  = [3] if activity == 'workoutMore6hours' else [1,2]
             care_smoker     = bool(care_smoker == 'yesSmoke')
             care_drinker    = [0, 1] if care_drinker == 'drinkingMore' else [0]
