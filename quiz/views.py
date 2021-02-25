@@ -18,7 +18,6 @@ class RecommendationView(View):
             
             all_answer = []
             for answer in answers:
-                one_answer_list = []
                 
                 if answer["id"] in [1, 3, 4]:
                     one_answer_list = [value for key, value in answer.items() if key != 'id']
@@ -91,14 +90,16 @@ class RecommendationView(View):
                 goals          = result_product.goal.all()
                 goal_name_list = [goal.name for goal in goals]
 
-                product_info = {}
-                product_info["id"]         = result_product.id
-                product_info["title"]      = result_product.name
-                product_info["subTitle"]   = result_product.sub_name
-                product_info["imageUrl"]   = result_product.image_set.get(is_main=True).image_url
-                product_info["healthGoal"] = goal_name_list
-                product_info["price"]      = price_list
-                product_info["size"]       = size_list
+                product_info = {
+                "id"         : result_product.id,
+                "title"      : result_product.name,
+                "subTitle"   : result_product.sub_name,
+                "imageUrl"   : result_product.image_set.get(is_main=True).image_url,
+                "healthGoal" : goal_name_list,
+                "price"      : price_list,
+                "size"       : size_list
+                }
+
 
                 recommendations.append(product_info)
 
