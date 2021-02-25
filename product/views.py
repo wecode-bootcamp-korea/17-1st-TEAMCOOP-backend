@@ -78,7 +78,8 @@ class ProductDetailView(View):
         product  = Product.objects.get(id=product_id)
         category = product.category.menu.name
         
-        context['category']            = category 
+        context['category']            = category
+        context['id']                  = product.id
         context['productImageSrc']     = product.image_set.get(is_main=False).image_url
         context['productCardImageSrc'] = product.image_set.get(is_main=True).image_url
 
