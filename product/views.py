@@ -10,96 +10,80 @@ from product.models import Category, Product, ProductStock, Goal
 from order.models   import Order, OrderProductStock
 
 class ProductListView(View):
-    def get(self, request):
-        result            = []
-        context           = {}
-        product_info_list = []
-        product_info      = {}
+    def make_product_info_list(self, products):
+        product_info_list  = []
+        for product in products:
+            goals              = product.goal.all()      
+            product_SSPs       = product.productstock_set.all()  
+            goal_name_list     = [goal.name for goal in goals]
+            product_price_list = [product_SSP.price for product_SSP in product_SSPs] 
+            product_stock_list = [product_SSP.stock for product_SSP in product_SSPs] 
+            product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
+            is_soldout         = bool(sum(product_stock_list) == 0)
+            
+            product_info = {}
+            product_info["id"]           = product.id
+            product_info["displayTitle"] = product.name
+            product_info["subTitle"]     = product.sub_name
+            product_info["imageUrl"]     = product.image_set.get(is_main=True).image_url
+            product_info["symbolURL"]    = goal_name_list
+            product_info["description"]  = product.description
+            product_info["displayPrice"] = product_price_list
+            product_info["displaySize"]  = product_size_list
+            product_info["isNew"]        = product.is_new
+            product_info["isSoldout"]    = is_soldout
+            product_info_list.append(product_info)
 
-        sort     = request.GET.get('sort', all)
+        return product_info_list
+
+    def get(self, request):
+        sort     = request.GET.get('sort', None)
         sort_dic = {}
-        sort_dic["lettervitamins"] = "Letter Vitamin"
+        sort_dic["lettervitamins"] = "Letter Vitamins"
         sort_dic["minerals"]       = "Minerals"
         sort_dic["herbs"]          = "Herbs"
         sort_dic["probiotics"]     = "Probiotics"
-        sort_dic["collagens"]      = "Collagens"
-        sort_dic["proteins"]       = "Proteins"
+        sort_dic["specialty"]      = "Specialty"
+        sort_dic["collagen"]       = "Collagen"
+        sort_dic["protein"]        = "Protein"
         sort_dic["boosts"]         = "Boosts"
-        sort_dic["immunity"]       = 1
-        sort_dic["brain"]          = 2
-        sort_dic["energy"]         = 3
-        sort_dic["eyes"]           = 4
-        sort_dic["heart"]          = 5
-        sort_dic["digestion"]      = 6
-        sort_dic["bones"]          = 7
-        sort_dic["fitness"]        = 8
+        sort_dic["immunity"]       = "Immunity"
+        sort_dic["brain"]          = "Brain"
+        sort_dic["energy"]         = "Energy"
+        sort_dic["eyes"]           = "Eyes"
+        sort_dic["heart"]          = "Heart"
+        sort_dic["digestion"]      = "Digestion"
+        sort_dic["bones"]          = "Bones"
+        sort_dic["fitness"]        = "Fitness"
         sort_dic["new"]            = True
         sort_dic["all"]            = ""
 
+        result = []
         categories = [categories for categories in Category.objects.filter(name__contains=sort_dic[sort])]
         if categories:
             for category in categories: 
+                context = {}
                 context["id"]                         = category.id
                 context["subcategory"]                = {}
                 context["subcategory"]["title"]       = category.name
                 context["subcategory"]["description"] = category.description
-                
                 products = Product.objects.filter(category=category)  
-
-                for product in products:
-                    goals              = product.goal.all()     
-                    product_SSPs       = product.productstock_set.all()    
-                    goal_name_list     = [goal.name for goal in goals]
-                    product_price_list = [product_SSP.price for product_SSP in product_SSPs] 
-                    product_stock_list = [product_SSP.stock for product_SSP in product_SSPs]
-                    product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
-                    is_soldout         = bool(sum(product_stock_list) == 0)
-
-                    product_info = {}
-                    product_info["id"]           = product.id
-                    product_info["displayTitle"] = product.name
-                    product_info["subTitle"]     = product.sub_name
-                    product_info["imageUrl"]     = product.image_set.get(is_main=True).image_url
-                    product_info["symbolURL"]    = goal_name_list
-                    product_info["description"]  = product.description
-                    product_info["displayPrice"] = product_price_list
-                    product_info["displaySize"]  = product_size_list
-                    product_info["isNew"]        = product.is_new
-                    product_info["isSoldout"]    = is_soldout
-                    product_info_list.append(product_info)
-
-                context["item"] = product_info_list
+                product_info_list = self.make_product_info_list(products=products) 
+                context["item"]   = product_info_list
                 result.append(context)
 
             return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
-
         else:
-            products = Product.objects.filter(goal=sort_dic[sort]) or Product.objects.filter(is_new=sort_dic[sort])
-            #recently added              
-            for product in products:
-                goals              = product.goal.all()      
-                product_SSPs       = product.productstock_set.all()  
-                goal_name_list     = [goal.name for goal in goals]
-                product_price_list = [product_SSP.price for product_SSP in product_SSPs] 
-                product_stock_list = [product_SSP.stock] for product_SSP in product_SSPs] 
-                product_size_list  = [product_SSP.size for product_SSP in product_SSPs]
-                is_soldout         = bool(sum(product_stock_list) == 0)
+            if Goal.objects.filter(name__icontains=sort_dic[sort]).exists():
+                goal     = Goal.objects.get(name__icontains=sort_dic[sort])
+                products = Product.objects.filter(goal=goal)
+                result   = self.make_product_info_list(products=products) 
+                return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
 
-                product_info["id"]           = product.id
-                product_info["displayTitle"] = product.name
-                product_info["subTitle"]     = product.sub_name
-                product_info["imageUrl"]     = product.image_set.get(is_main=True).image_url
-                product_info["symbolURL"]    = goal_name_list
-                product_info["description"]  = product.description
-                product_info["displayPrice"] = product_price_list
-                product_info["displaySize"]  = product_size_list
-                product_info["isNew"]        = product.is_new
-                product_info["isSoldout"]    = is_soldout
-                product_info_list.append(product_info)
-
-                context["item"] = product_info_list
-
-            return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
+            else:
+                products = Product.objects.filter(is_new=sort_dic[sort])
+                result   = self.make_product_info_list(products=products) 
+                return JsonResponse({"data": result, "message": "SUCCESS"}, status=200)
         
 class ProductDetailView(View):
     def get(self, request, product_id):
