@@ -25,9 +25,21 @@ class RecommendationView(View):
                 else:
                     one_answer_list = [key for key, value in answer.items() if value and key != 'id']
                 all_answer.append(one_answer_list)
-
-
             
+            answer = {
+                {"id":1, "name":"wecode"},
+                {"id":2, "male": 0, "female": 1},
+                {"id":3, "age": 0 if age>50 else 1},
+                {"id":4, "height": int, "weight": int},
+                {"id":5, "workLess3hours": 0, "workLess6hours": 1, "workMore6hours": 2},
+                {"id":6, "yesSmoke": 0, "noSmoke": 1},
+                {"id":7, "drinkingLess": 0, "drinkingMore": 1},
+                {"id":8, "Immunity": bool,"Brain": bool,"Energy": bool,"Eyes": bool,"Heart": bool,"Digestion": bool,"Bones": bool,"Fitness": bool},
+                {"id":9, "vegan": bool, "vegetarian": bool, "nonVegetarian": bool},
+                {"id":10, "soy": bool, "nuts": bool, "milk": bool, "milk": bool, "wheat": bool, "fish": bool},
+                {"id":11, "arthritis": bool, "diabetes": bool, "menstrualIrregularity": bool, "liverDisease": bool, "osteoporosis": bool}
+            }
+
             gender       = all_answer[1][0]
             age          = int(all_answer[2][0])
             height       = int(all_answer[3][0])
