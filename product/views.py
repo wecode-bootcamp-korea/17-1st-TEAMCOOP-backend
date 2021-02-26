@@ -1,12 +1,9 @@
 import json
-from datetime import datetime
-from random   import randint
 
-from django.http            import JsonResponse, HttpResponse, Http404
+from django.http            import JsonResponse 
 from django.views           import View
 from django.db.models       import Q
 
-from user.utils     import login_decorator
 from product.models import Category, Product, ProductStock, Goal
 
 class ProductListView(View):
@@ -20,7 +17,7 @@ class ProductListView(View):
                           "symbolURL"    : [goal.name for goal in product.goal.all()],
                           "description"  : product.description,
                           "displayPrice" : [product_stock.price for product_stock in product.productstock_set.all()],
-                          "displaySize"  : [product_stock.stock for product_stock in product.productstock_set.all()],
+                          "displaySize"  : [product_stock.size for product_stock in product.productstock_set.all()],
                           "isNew"        : product.is_new,
                           "isSoldout"    : sum(product_stock.stock <= 0 for product_stock in product.productstock_set.all())
                           } for product in products]

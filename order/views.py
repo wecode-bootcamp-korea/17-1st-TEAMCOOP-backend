@@ -1,5 +1,6 @@
 import json
 from datetime               import datetime
+from random                 import randint
 
 from django.http            import JsonResponse
 from django.views           import View
@@ -60,6 +61,10 @@ class CartView(View):
             product_id    = data['productId']
             product_size  = data.get('productSize', None)
             product_price = float(data['productPrice'])
+
+            print(f'product_id: {product_id}')
+            print(f'product_size: {product_size}')
+            print(f'product_price: {product_price}')
 
             if not Order.objects.filter(user=user, order_status=OrderStatus.objects.get(name='주문 전')).exists():
                 shipping_cost = DEFUALT_COST if product_price < MINIMUM_PRICE else DISCOUNTED_COST
