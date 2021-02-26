@@ -11,6 +11,10 @@ from user.models            import Address
 from product.models         import ProductStock 
 from .models                import Order, OrderProductStock, OrderStatus
 
+DEFUALT_COST    = 5
+MINIMUM_PRICE   = 20
+DISCOUNTED_COST = 0
+
 class CartView(View):
     @login_decorator
     def get(self, request):
@@ -20,8 +24,7 @@ class CartView(View):
             if not Order.objects.filter(user=user, order_status=OrderStatus.objects.get(name='주문 전')).exists():
                 return JsonResponse({"message": "EMPTY"}, status=200)
             
-            order          = Order.objects.get(user=user, order_status=OrderStatus.objects.get(name='주문 전'))
-            order_products = order.orderproductstock_set.filter(order=order)
+            order = Order.objects.get(user=user, order_status=OrderStatus.objects.get(name='주문 전'))
         
             cart_product_list = [{
                 "category"        : order_product.product_stock.product.category.menu.name,
@@ -34,8 +37,7 @@ class CartView(View):
                 "productStock"    : order_product.product_stock.stock,
                 "productImageUrl" : order_product.product_stock.product.image_set.get(is_main=True).image_url,
                 "productQuantity" : order_product.quantity
-                } for order_product in order_products
-            ]
+                } for order_product in order.orderproductstock_set.filter(order=order)]
 
             data = {
                 "orderNumber": order.order_number,
@@ -45,7 +47,7 @@ class CartView(View):
             return JsonResponse({"data": data, "message": "SUCCESS"}, status=200)
 
         except OrderStatus.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_DOES_NOT_EXIST"}, status=400)
 
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
@@ -57,12 +59,10 @@ class CartView(View):
             user          = request.user
             product_id    = data['productId']
             product_size  = data.get('productSize', None)
-            product_price = data['productPrice']
-
-            product_price = float(product_price)
+            product_price = float(data['productPrice'])
 
             if not Order.objects.filter(user=user, order_status=OrderStatus.objects.get(name='주문 전')).exists():
-                shipping_cost = 5 if product_price < 20 else 0
+                shipping_cost = DEFUALT_COST if product_price < MINIMUM_PRICE else DISCOUNTED_COST
                 
                 order_info    = Order.objects.create( 
                     user            = user,
@@ -75,7 +75,7 @@ class CartView(View):
             else:
                 order_info = Order.objects.get(user=user, order_status_id=1)
                 order_info.sub_total_cost = float(order_info.sub_total_cost) + product_price
-                order_info.shipping_cost  = 5 if order_info.sub_total_cost < 20 else 0
+                order_info.shipping_cost  = DEFUALT_COST if order_info.sub_total_cost < MINIMUM_PRICE else DISCOUNTED_COST
                 order_info.total_cost     = float(order_info.sub_total_cost) + order_info.shipping_cost
                 order_info.save()
 
@@ -95,15 +95,13 @@ class CartView(View):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
 
         except OrderStatus.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_DOES_NOT_EXIST"}, status=400)
         
         except ProductStock.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "PRODUCTSTOCK_DOES_NOT_EXIST"}, status=400)
 
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
-
-
 
     @login_decorator
     def patch(self, request):
@@ -150,13 +148,13 @@ class CartView(View):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
         except Order.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_DOES_NOT_EXIST"}, status=400)
 
         except ProductStock.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "PRODUCTSTOCK_DOES_NOT_EXIST"}, status=400)
 
         except OrderStatus.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_STATUS_DOES_NOT_EXIST"}, status=400)
 
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
@@ -179,13 +177,13 @@ class CartDetailView(View):
             return JsonResponse({"message": "SUCCESS"}, status=200) 
 
         except Order.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_DOES_NOT_EXIST"}, status=400)
 
         except OrderStatus.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_STATUS_DOES_NOT_EXIST"}, status=400)
 
         except OrderProductStock.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_PRODUCTSTOCK_DOES_NOT_EXIST"}, status=400)
 
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
@@ -212,12 +210,11 @@ class CheckOutView(View):
             "productIsSoldOut": bool(order_product.product_stock.stock - order_product.quantity <= 0),
             "productImageUrl" : order_product.product_stock.product.image_set.get(is_main=True).image_url,
             "productQuantity" : order_product.quantity
-            } for order_product in order_products
-        ] 
+            } for order_product in order_products] 
          
         address_info = user.address_set.filter(is_main=True)
-        address      = address_info[0].address if address_info else ""
-        zip_code     = address_info[0].zip_code if address_info else ""
+        address      = address_info.first().address if address_info else ""
+        zip_code     = address_info.first().zip_code if address_info else ""
         user_info = {
             "userName"    : user.name,
             "email"       : user.email,
@@ -268,10 +265,11 @@ class CheckOutView(View):
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
         
         except Order.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_DOES_NOT_EXIST"}, status=400)
 
         except OrderStatus.DoesNotExist:
-            return JsonResponse({"message": "DOES_NOT_EXIST"}, status=400)
+            return JsonResponse({"message": "ORDER_STATUS_DOES_NOT_EXIST"}, status=400)
 
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
+
