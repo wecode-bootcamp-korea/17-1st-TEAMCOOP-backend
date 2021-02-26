@@ -84,9 +84,7 @@ class CartView(View):
             OrderProductStock.objects.update_or_create(
                 order         = order_info,
                 product_stock = added_product,
-                defaults      = {
-                    "quantity" : 1
-                }
+                defaults      = {"quantity": 1}
             )
 
             return JsonResponse({"message": "SUCCESS"}, status=200)
@@ -119,7 +117,6 @@ class CartView(View):
             target_order_product_size = target_order_product.product_stock.size
             product_new               = ProductStock.objects.get(product_id=product_id, size=size_new)
 
-            # 변경할 상품이 이미 장바구니에 존재하는 경우
             if target_order_product_size != size_new:
                 if OrderProductStock.objects.filter(order=order, product_stock=product_new).exists(): 
                     order_product_already_exist = OrderProductStock.objects.get(order=order, product_stock=product_new)
@@ -130,11 +127,9 @@ class CartView(View):
                     order_product_already_exist.quantity = quantity_new
                     order_product_already_exist.save()
 
-                    # 원래 있던 상품은 새로 바꿀 상품이 이미 존재하는게 있으므로 삭제 
                     target_order_product.delete()
                     return JsonResponse({"message": "SUCCESS"}, status=200)
 
-            # 변경할 상품이 장바구니에 없는 경우
             if bool(product_new.stock - int(quantity_new) < 0):
                 return JsonResponse({"message": "OUT_OF_STOCK"}, status=200)
 
@@ -254,9 +249,7 @@ class CheckOutView(View):
                 address  = address_order,
                 zip_code = zipcode_order,
                 order    = order_info,
-                defaults = {
-                    'is_main': False
-                }
+                defaults = {'is_main': False}
             )
 
             return JsonResponse({"message": "SUCCESS"}, status=200)
