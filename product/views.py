@@ -123,4 +123,4 @@ class ProductDetailView(View):
             return JsonResponse({"data": context, "message": "SUCCESS"}, status=200)
 
         except Product.DoesNotExist:
-            return JsonResponse({"message": "BAD_REQUEST"}, status=400)
+            return JsonResponse({"message": "BAD_REQUEST"}, status=400) 
