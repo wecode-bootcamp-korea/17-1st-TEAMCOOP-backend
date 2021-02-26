@@ -237,7 +237,16 @@ class CheckOutView(View):
             zipcode_order  = data['zipcode']
             user           = request.user
 
-            order_info = Order.objects.get(order_number=order_number)
+            order_info     = Order.objects.get(order_number=order_number)
+            order_products = OrderProductStock.objects.filter(order=order_info)
+            
+            for order_product in order_products:
+                order_product.product_stock.stock = order_product.product_stock.stock - order_product.quantity
+                order_product.product_stock.save()
+
+                if order_product.product_stock.stock < 0:
+                    return JsonResponse({"message": "OUT_OF_STOCK"}, status=200)
+
             order_info.order_status     = OrderStatus.objects.get(name='결제 완료')
             order_info.sub_total_cost   = float(sub_total_cost)
             order_info.shipping_cost    = float(shipping_cost)
