@@ -85,19 +85,19 @@ class RecommendationView(View):
                 user.recommendation.add(result_product)
 
                 product_SSPs   = result_product.productstock_set.all()
-                price_list     = [product_SSP.price for product_SSP in product_SSPs] #product_price_list
+                price_list     = [product_SSP.price for product_SSP in product_SSPs]
                 size_list      = [product_SSP.size for product_SSP in product_SSPs]
                 goals          = result_product.goal.all()
                 goal_name_list = [goal.name for goal in goals]
 
                 product_info = {
-                "id"         : result_product.id,
-                "title"      : result_product.name,
-                "subTitle"   : result_product.sub_name,
-                "imageUrl"   : result_product.image_set.get(is_main=True).image_url,
-                "healthGoal" : goal_name_list,
-                "price"      : price_list,
-                "size"       : size_list
+                    "id"         : result_product.id,
+                    "title"      : result_product.name,
+                    "subTitle"   : result_product.sub_name,
+                    "imageUrl"   : result_product.image_set.get(is_main=True).image_url,
+                    "healthGoal" : goal_name_list,
+                    "price"      : price_list,
+                    "size"       : size_list
                 }
 
 
@@ -107,4 +107,3 @@ class RecommendationView(View):
 
         except KeyError:
             return JsonResponse({"message": "KEY_ERROR"}, status=400)
-
