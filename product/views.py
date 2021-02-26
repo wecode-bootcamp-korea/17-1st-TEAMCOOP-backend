@@ -22,7 +22,7 @@ class ProductListView(View):
                           "displayPrice" : [product_stock.price for product_stock in product.productstock_set.all()],
                           "displaySize"  : [product_stock.stock for product_stock in product.productstock_set.all()],
                           "isNew"        : product.is_new,
-                          "isSoldout"    : bool(sum(product_stock.stock for product_stock in product.productstock_set.all()))
+                          "isSoldout"    : sum(product_stock.stock <= 0 for product_stock in product.productstock_set.all())
                           } for product in products]
 
         return product_info_list
@@ -99,10 +99,10 @@ class ProductDetailView(View):
             product_SSPs = ProductStock.objects.filter(product=product)  # SSP: siz e, stock, price
             if category_name == 'vitamins':
                 price      = product_SSPs.first().price   
-                is_soldout = product_SSPs.first().stock == 0
+                is_soldout = product_SSPs.first().stock <= 0
             else:
                 price      = {product_SSP.size : product_SSP.price for product_SSP in product_SSPs}
-                is_soldout = {product_SSP.size : product_SSP.stock == 0 for product_SSP in product_SSPs}
+                is_soldout = {product_SSP.size : product_SSP.stock <= 0 for product_SSP in product_SSPs}
             context['productPrice']     = price
             context['isSoldOut']        = is_soldout
 
