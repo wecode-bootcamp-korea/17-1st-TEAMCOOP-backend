@@ -99,11 +99,10 @@ class ProductDetailView(View):
             product_SSPs = ProductStock.objects.filter(product=product)  # SSP: siz e, stock, price
             if category_name == 'vitamins':
                 price      = product_SSPs.first().price   
-                is_soldout = bool(product_SSPs.first().stock == 0)
+                is_soldout = product_SSPs.first().stock == 0
             else:
                 price      = {product_SSP.size : product_SSP.price for product_SSP in product_SSPs}
-                is_soldout = {product_SSP.size : bool(product_SSP.stock == 0) for product_SSP in product_SSPs}
-
+                is_soldout = {product_SSP.size : product_SSP.stock == 0 for product_SSP in product_SSPs}
             context['productPrice']     = price
             context['isSoldOut']        = is_soldout
 
@@ -116,8 +115,7 @@ class ProductDetailView(View):
                         'subTitle'      : similar_product.sub_name,
                         'imageUrl'      : similar_product.image_set.get(is_main=True).image_url,
                         'healthGoalList': [goal.name for goal in similar_product.goal.all()],
-
-                        }
+                    }
                     for similar_product in goal_product.product_set.exclude(id=product_id)]
 
                 context['similarProduct'] = similar_product_list[:2] 
@@ -125,7 +123,4 @@ class ProductDetailView(View):
             return JsonResponse({"data": context, "message": "SUCCESS"}, status=200)
 
         except Product.DoesNotExist:
-            return JsonResponse({"message": "BAD_REQUEST"}, status=400)
-
-        except Product.MultipleObjectsReturned:
             return JsonResponse({"message": "BAD_REQUEST"}, status=400)
