@@ -5,8 +5,6 @@ from random   import randint
 from django.http            import JsonResponse, HttpResponse, Http404
 from django.views           import View
 from django.db.models       import Q
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-
 
 from user.utils     import login_decorator
 from product.models import Category, Product, ProductStock, Goal
@@ -65,12 +63,10 @@ class ProductListView(View):
         
 class ProductDetailView(View):
     def get(self, request, product_id):
-        if not Product.objects.filter(id=product_id).exists():
-            return JsonResponse({'message': 'DOES_NOT_EXIST'}, status=404)
-
-        product  = Product.objects.get(id=product_id)
-        category_name = product.category.menu.name
-        context  = {
+        try:
+            product  = Product.objects.get(id=product_id)
+            category_name = product.category.menu.name
+            context  = {
                 'category'           : category_name,
                 'id'                 : product.id,
                 'productImageSrc'    : product.image_set.get(is_main=False).image_url,
@@ -85,36 +81,35 @@ class ProductDetailView(View):
                 }
 
         # is_vegan, is_vegeterian
-        vegan_level = product.vegan_level_id
-        if vegan_level == 1:
-            is_vegan      = True
-            is_vegeterian = False
-        elif vegan_level == 2:
-            is_vegan      = False
-            is_vegeterian = True
-        else:
-            is_vegan      = False
-            is_vegeterian = False
+            vegan_level = product.vegan_level_id
+            if vegan_level == 1:
+                is_vegan      = True
+                is_vegeterian = False
+            elif vegan_level == 2:
+                is_vegan      = False
+                is_vegeterian = True
+            else:
+                is_vegan      = False
+                is_vegeterian = False
 
-        context['isVegan']        = is_vegan
-        context['isVegetarian']   = is_vegeterian
+            context['isVegan']        = is_vegan
+            context['isVegetarian']   = is_vegeterian
 
         # size, price
-        product_SSPs = ProductStock.objects.filter(product=product)  # SSP: siz e, stock, price
-        if category_name == 'vitamins':
-            price      = product_SSPs.first().price   
-            is_soldout = bool(product_SSPs.first().stock == 0)
-        else:
-            price      = {product_SSP.size : product_SSP.price for product_SSP in product_SSPs}
-            is_soldout = {product_SSP.size : bool(product_SSP.stock == 0) for product_SSP in product_SSPs}
+            product_SSPs = ProductStock.objects.filter(product=product)  # SSP: siz e, stock, price
+            if category_name == 'vitamins':
+                price      = product_SSPs.first().price   
+                is_soldout = bool(product_SSPs.first().stock == 0)
+            else:
+                price      = {product_SSP.size : product_SSP.price for product_SSP in product_SSPs}
+                is_soldout = {product_SSP.size : bool(product_SSP.stock == 0) for product_SSP in product_SSPs}
 
-        context['productPrice']     = price
-        context['isSoldOut']        = is_soldout
+            context['productPrice']     = price
+            context['isSoldOut']        = is_soldout
 
         # similar products
-        goals_product        = product.goal.all()
-        for goal_product in goals_product:
-            similar_product_list = [
+            for goal_product in product.goal.all():
+                similar_product_list = [
                     {
                         'id'            : similar_product.id,
                         'title'         : similar_product.name,
@@ -125,6 +120,12 @@ class ProductDetailView(View):
                         }
                     for similar_product in goal_product.product_set.exclude(id=product_id)]
 
-            context['similarProduct'] = similar_product_list[:2] 
+                context['similarProduct'] = similar_product_list[:2] 
 
-        return JsonResponse({"data": context, "message": "SUCCESS"}, status=200)
+            return JsonResponse({"data": context, "message": "SUCCESS"}, status=200)
+
+        except Product.DoesNotExist:
+            return JsonResponse({"message": "BAD_REQUEST"}, status=400)
+
+        except Product.MultipleObjectsReturned:
+            return JsonResponse({"message": "BAD_REQUEST"}, status=400)
