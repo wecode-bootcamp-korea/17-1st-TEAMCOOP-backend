@@ -53,7 +53,7 @@ class RecommendationView(View):
 
             gender_code     = [1, 3] if gender == 'male' else [2, 3]
             age_code        = [2, 3] if age >= 50 else [1, 3]
-            bmi             = weight/((height*0.01)**2)
+            bmi             = weight / ((height * 0.01) ** 2)
             care_obesity    = [0, 1] if  bmi>= 25 else [0]
             activity_level  = [3] if activity == 'workoutMore6hours' else [1,2]
             care_smoker     = bool(care_smoker == 'yesSmoke')
@@ -99,8 +99,6 @@ class RecommendationView(View):
                     "price"      : price_list,
                     "size"       : size_list
                 }
-
-
                 recommendations.append(product_info)
 
             return JsonResponse({'data':recommendations, 'message':'SUCCESS'}, status=200)
