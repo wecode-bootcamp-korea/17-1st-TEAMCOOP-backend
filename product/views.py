@@ -10,9 +10,6 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 
 from user.utils     import login_decorator
 from product.models import Category, Product, ProductStock, Goal
-from order.models   import Order, OrderProductStock, OrderStatus
-
-SHIPPING_COST = 5
 
 class ProductListView(View):
     def make_product_info_list(self, products):
@@ -131,52 +128,3 @@ class ProductDetailView(View):
             context['similarProduct'] = similar_product_list[:2] 
 
         return JsonResponse({"data": context, "message": "SUCCESS"}, status=200)
-
-#Add 눌렀을 때 
-class ProductToCartView(View):
-    @login_decorator
-    def post(self, request):
-        try:
-            data          = json.loads(request.body)
-            user          = request.user
-            product_id    = data['productId']
-            product_size  = data.get('productSize', None)
-            product_price = data['productPrice']
-
-            product_price = float(product_price)
-
-            # orders insert
-            if not Order.objects.filter(user=user, order_status=OrderStatus.objects.get(name='주문 전')).exists():
-                shipping_cost = SHIPPING_COST if product_price < 20 else 0
-                order         = Order.objects.create(  # order_info
-                    user            = user,
-                    order_number    = datetime.today().strftime("%Y%m%d") + str(randint(1000, 10000)),
-                    order_status_id = OrderStatus.objects.get(name='주문 전'),
-                    sub_total_cost  = product_price,
-                    shipping_cost   = shipping_cost,
-                    total_cost      = product_price + shipping_cost
-                )
-            else:
-                order = Order.objects.get(user=user, order_status=OrderStatus.objects.get(name='주문 전'))
-                order.sub_total_cost = float(order.sub_total_cost) + product_priceㅑ
-                order.shipping_cost  = SHIPPING_COST if order.sub_total_cost < 20 else 0
-                order.total_cost     = float(order.sub_total_cost) + order.shipping_cost
-                order.save()
-            
-            if not ProductStock.objects.filter(product_id=product_id, size=product_size):
-                return JsonResponse({"message": "PRODUCT_DOES_NOT_EXIST"}, status=400)
-
-            # order_product_stocks insert
-            added_product = ProductStock.objects.get(product_id=product_id, size=product_size)
-            OrderProductStock.objects.update_or_create(
-                order         = order,
-                product_stock = added_product,
-                defaults      = {
-                    'quantity' : 1
-                }
-            )
-            
-            return JsonResponse({"message": "SUCCESS"}, status=200)
-
-        except KeyError:
-            return JsonResponse({"message": DOES_NOT_EXIST}, status=404)
