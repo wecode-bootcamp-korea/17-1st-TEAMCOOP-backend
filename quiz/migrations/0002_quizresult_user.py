@@ -9,14 +9,14 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('quiz', '0001_initial'),
         ('user', '0001_initial'),
-        ('order', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
+            model_name='quizresult',
             name='user',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='user.user'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='user.user'),
         ),
     ]
