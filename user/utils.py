@@ -11,7 +11,7 @@ from user.models  import User
 def login_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         if 'Authorization' not in request.headers:
-            return JsonResponse({"MESSAGE":"NEED_LOGIN"}, status=401)
+            return JsonResponse({"message":"NEED_LOGIN"}, status=401)
 
         access_token = request.headers['Authorization']
         
@@ -21,10 +21,10 @@ def login_decorator(func):
             request.user = user
         
         except jwt.DecodeError:
-            return JsonResponse({"MESSAGE":"INVALID_TOKEN"}, status=401)
+            return JsonResponse({"message":"INVALID_TOKEN"}, status=401)
         
         except User.DoesNotExist:
-            return JsonResponse({"MESSAGE":"UNKNOWN_USER"}, status=401)
+            return JsonResponse({"message":"UNKNOWN_USER"}, status=401)
 
         return func(self, request, *args, **kwargs)
     
