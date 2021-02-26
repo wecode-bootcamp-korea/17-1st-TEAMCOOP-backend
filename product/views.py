@@ -118,7 +118,7 @@ class ProductDetailView(View):
                     {
                         'id'            : similar_product.id,
                         'title'         : similar_product.name,
-                        'subtitle'      : similar_product.sub_name,
+                        'subTitle'      : similar_product.sub_name,
                         'imageUrl'      : similar_product.image_set.get(is_main=True).image_url,
                         'healthGoalList': [goal.name for goal in similar_product.goal.all()],
 
