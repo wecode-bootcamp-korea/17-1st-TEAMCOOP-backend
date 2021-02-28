@@ -156,6 +156,9 @@ class CartView(View):
         except OrderStatus.DoesNotExist:
             return JsonResponse({"message": "ORDER_STATUS_DOES_NOT_EXIST"}, status=400)
 
+        except OrderProductStock.DoesNotExist:
+            return JsonResponse({"message": "ORDER_PRODUCTSTOCK_DOES_NOT_EXIST"}, status=400)
+
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
 
