@@ -19,14 +19,14 @@
 - Naver Cloud Platform API
 
 ## API Endpoint
-- ![image](https://user-images.githubusercontent.com/70516522/115139410-b942b180-a06c-11eb-959c-8392ee19269e.png)
+![image](https://user-images.githubusercontent.com/70516522/115139410-b942b180-a06c-11eb-959c-8392ee19269e.png)
 
 ## 기능 구현
 
 #### 모델링
 
 - AQueryTool을 사용하여 DB모델링
-- ![image](https://user-images.githubusercontent.com/70516522/115139417-c19aec80-a06c-11eb-8abc-0d71b69bb01c.png)
+![image](https://user-images.githubusercontent.com/70516522/115139417-c19aec80-a06c-11eb-8abc-0d71b69bb01c.png)
 
 #### 회원가입 & 로그인
 
