@@ -23,10 +23,9 @@
 
 ## API Endpoint
 ![image](https://user-images.githubusercontent.com/70516522/115139410-b942b180-a06c-11eb-959c-8392ee19269e.png)
-<br>
+<br><br>
 
 ## 기능 구현
-<br>
 
 #### 모델링
 
