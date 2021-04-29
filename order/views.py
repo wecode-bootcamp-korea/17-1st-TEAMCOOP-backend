@@ -1,5 +1,6 @@
 import json
 from datetime               import datetime
+from random                 import randint
 
 from django.http            import JsonResponse
 from django.views           import View
@@ -60,6 +61,10 @@ class CartView(View):
             product_id    = data['productId']
             product_size  = data.get('productSize', None)
             product_price = float(data['productPrice'])
+
+            print(f'product_id: {product_id}')
+            print(f'product_size: {product_size}')
+            print(f'product_price: {product_price}')
 
             if not Order.objects.filter(user=user, order_status=OrderStatus.objects.get(name='주문 전')).exists():
                 shipping_cost = DEFUALT_COST if product_price < MINIMUM_PRICE else DISCOUNTED_COST
@@ -151,6 +156,9 @@ class CartView(View):
         except OrderStatus.DoesNotExist:
             return JsonResponse({"message": "ORDER_STATUS_DOES_NOT_EXIST"}, status=400)
 
+        except OrderProductStock.DoesNotExist:
+            return JsonResponse({"message": "ORDER_PRODUCTSTOCK_DOES_NOT_EXIST"}, status=400)
+
         except MultipleObjectsReturned:
             return JsonResponse({"message": "MULTIPLE_OBJECTS_RETURNED"}, status=400)
 
@@ -237,7 +245,16 @@ class CheckOutView(View):
             zipcode_order  = data['zipcode']
             user           = request.user
 
-            order_info = Order.objects.get(order_number=order_number)
+            order_info     = Order.objects.get(order_number=order_number)
+            order_products = OrderProductStock.objects.filter(order=order_info)
+            
+            for order_product in order_products:
+                order_product.product_stock.stock = order_product.product_stock.stock - order_product.quantity
+                order_product.product_stock.save()
+
+                if order_product.product_stock.stock < 0:
+                    return JsonResponse({"message": "OUT_OF_STOCK"}, status=200)
+
             order_info.order_status     = OrderStatus.objects.get(name='결제 완료')
             order_info.sub_total_cost   = float(sub_total_cost)
             order_info.shipping_cost    = float(shipping_cost)
